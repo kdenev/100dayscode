@@ -18,12 +18,18 @@ class Snake:
 
     def create_snake(self):
         for position in self.starting_positions:
-            t = Turtle()
-            t.up()
-            t.shape("square")
-            t.color("white")
-            t.setpos(position)
-            self.snake.append(t)
+            self.add_turtle(position)
+
+    def add_turtle(self, position):
+        t = Turtle()
+        t.up()
+        t.shape("square")
+        t.color("white")
+        t.setpos(position)
+        self.snake.append(t)
+
+    def grow(self):
+        self.add_turtle(self.snake[-1].position())
     
     def move(self, dist = MOVE_DISTANCE):
 
