@@ -1,6 +1,7 @@
 from turtle import Screen
 from paddle import Paddle
 from ball import Ball
+import random
 import time
 
 my_screen = Screen()
@@ -27,11 +28,20 @@ game_on = True
 
 while game_on:
     # ball.goto(350, 250)
-    time.sleep(.2)
+    time.sleep(.1)
     ball.move()
+    # Wall collision
+    if ball.ycor() > 280 or ball.ycor() < -280:
+            ball.bounce()
+    # Paddle collision
+    if (ball.distance(paddle_L) < 50 and ball.xcor() < -330) or (ball.distance(paddle_R) < 50 and ball.xcor() > 330):
+        ball.bounce()
+    # Score
+    if ball.xcor() > 400 or ball.xcor() < -400:
+        ball.setpos(0, 0)
+        ball.setheading(random.randint(0,360))
     my_screen.update()
-
-
+    
 
 
 my_screen.exitonclick()
