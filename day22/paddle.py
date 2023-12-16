@@ -19,18 +19,10 @@ class Paddle(Turtle):
     def move(self):
         self.forward(TRAVEL_DISTANCE)
 
-    def R_up(self):
+    def up(self):
         self.setheading(90)
         self.move()
         
-    def R_down(self):
+    def down(self):
         self.setheading(270)
         self.move()
-
-    def L_up(self):
-        self.setheading(90)
-        self.move()
-        
-    def L_down(self):
-        self.setheading(270)
-        self.move()      
