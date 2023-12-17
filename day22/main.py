@@ -38,8 +38,13 @@ while game_on:
         ball.bounce()
     # Score
     if ball.xcor() > 400 or ball.xcor() < -400:
+        if ball.xcor() > 400:
+            new_dir = 180
+        else:
+            new_dir = 0
         ball.setpos(0, 0)
-        ball.setheading(random.randint(0,360))
+        ball.setheading(new_dir)
+        
     my_screen.update()
     
 
