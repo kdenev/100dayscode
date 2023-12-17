@@ -2,7 +2,7 @@ from turtle import Turtle
 
 PADDLE_WIDTH = 1
 PADDLE_HEIGHT = 5
-TRAVEL_DISTANCE = 40
+TRAVEL_DISTANCE = 50
 
 
 class Paddle(Turtle):

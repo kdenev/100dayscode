@@ -1,6 +1,7 @@
 from turtle import Screen
 from paddle import Paddle
 from ball import Ball
+from scoreboard import Scoreboard
 import random
 import time
 
@@ -17,6 +18,7 @@ PADDLE_START_COR_Y = 0
 paddle_R = Paddle(PADDLE_START_COR_X, PADDLE_START_COR_Y)
 paddle_L = Paddle(-PADDLE_START_COR_X, PADDLE_START_COR_Y)
 ball = Ball()
+score = Scoreboard() 
 
 my_screen.listen()
 my_screen.onkey(paddle_R.up, "Up")
@@ -28,22 +30,21 @@ game_on = True
 
 while game_on:
     # ball.goto(350, 250)
-    time.sleep(.1)
+    time.sleep(ball.travel_speed)
     ball.move()
     # Wall collision
     if ball.ycor() > 280 or ball.ycor() < -280:
             ball.bounce()
     # Paddle collision
-    if (ball.distance(paddle_L) < 50 and ball.xcor() < -330) or (ball.distance(paddle_R) < 50 and ball.xcor() > 330):
+    if (ball.distance(paddle_L) < 50 and ball.xcor() < -300) or (ball.distance(paddle_R) < 50 and ball.xcor() > 300):
         ball.bounce()
+        ball.speed_up()
     # Score
-    if ball.xcor() > 400 or ball.xcor() < -400:
-        if ball.xcor() > 400:
-            new_dir = 180
-        else:
-            new_dir = 0
-        ball.setpos(0, 0)
-        ball.setheading(new_dir)
+    if ball.xcor() > 380 or ball.xcor() < -380:
+        score.count_score(ball)
+        ball.reset_position()
+        score.update_scoreboard()
+        
         
     my_screen.update()
     
