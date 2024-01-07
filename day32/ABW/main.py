@@ -44,7 +44,7 @@ def pick_random_letter():
 
 def send_letter(letter, name):
     my_email = "kdenevtest2@gmail.com"
-    password = "ndcj lgca iuip sdbu" # <- insert password here
+    password = "" # <- insert password here
 
     msg = EmailMessage()
     msg.set_content(letter.replace("[NAME]", name.title()))
