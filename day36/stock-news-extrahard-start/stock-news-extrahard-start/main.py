@@ -6,7 +6,7 @@ import sys
 import os
 
 # Import api script
-sys.path.append(r"C:\Users\KD Tablet\Desktop\code\python\api_key_creator")
+sys.path.append(r"D:\Desktop\code\python\api_key_creator")
 import api_key_creator
 
 
