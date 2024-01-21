@@ -12,9 +12,12 @@ class FlightData:
         self.headers =  {"apikey": os.environ['TEQUILA_KIWI_API']}
     
     def get_iata(self, city:str):
+        '''
+            Return the iata code for the provided city name.
+        '''
         self.params = {
             "term": city
             , "location_type": "city"
         }
         self.response = requests.get(url=self.loc_api, params=self.params, headers=self.headers)
-        self.iata = self.response.json()['locations'][0]['code']
+        return self.response.json()['locations'][0]['code']

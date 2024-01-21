@@ -1,3 +1,27 @@
+import sys
+import os
+import requests
+from datetime import datetime, timedelta
+# Import api script
+sys.path.append(r"D:\Desktop\code\python\api_key_creator")
+import api_key_creator
+
+
 class FlightSearch:
-    #This class is responsible for talking to the Flight Search API.
-    pass
+    def __init__(self) -> None:
+        self.headers =  {"apikey": os.environ['TEQUILA_KIWI_API']}
+        self.url = "https://api.tequila.kiwi.com/v2/search"
+        self.today = datetime.now().date()
+        self.end_day = self.today + timedelta(days=180)
+
+
+    def get_flights(self, city):
+        self.params = {
+            "fly_from": "city:LON"
+            , "fly_to": f"city:{city}"
+            , "date_from": self.today.strftime("%d/%m/%Y")
+            , "date_to": self.end_day.strftime("%d/%m/%Y")
+        }
+        self.response = requests.get(url=self.url, params=self.params, headers=self.headers)
+        # print(self.response.text)
+        return self.response.json()

@@ -1,14 +1,24 @@
 #This file will need to use the DataManager,FlightSearch, FlightData, NotificationManager classes to achieve the program requirements.
 from flight_data import FlightData
 from data_manager import DataManager
+from flight_search import FlightSearch
 
-fligt_api = FlightData()
+# Init classes
+flight_data_api = FlightData()
 data_api = DataManager()
+flight_search_api = FlightSearch()
 
-# fligt_api.get_iata("Paris")
-# print(fligt_api.iata)
+# Update Spreadsheet
+# data_api.update_iata()
 
+destinations_data = data_api.get_json()['prices']
 
-# city_names = data_api.get_city_names()
-# print(city_names)
-data_api.update_row()
+for destination in destinations_data:
+    flights_data = flight_search_api.get_flights(destination['iataCode'])['data']
+    for flight in flights_data:
+        if flight['availability']['seats'] and flight['price'] < destination['lowestPrice']:
+            print(f"{destination['city']}, yes we are coming!")
+            print(flight['price'], flight['local_departure'])
+            # bulid the notification manager
+            # send sms for first
+            # send email for the all
