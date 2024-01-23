@@ -9,7 +9,8 @@ import api_key_creator
 
 class DataManager:
     def __init__(self) -> None:
-        self.sheety_api = "https://api.sheety.co/820c5bec08a63ac31b81acce6cb91748/flightDeals/prices"
+        self.prices_api = "https://api.sheety.co/820c5bec08a63ac31b81acce6cb91748/flightDeals/prices"
+        self.users_api = "https://api.sheety.co/820c5bec08a63ac31b81acce6cb91748/flightDeals/users"
         self.headers = {
             "Authorization": os.environ['SHEETY_BEARER_WORKOUTS']
         } 
@@ -23,7 +24,7 @@ class DataManager:
         '''
             Returns the whole spreadsheet data in json format.
         '''
-        self.response = requests.get(url=self.sheety_api, headers=self.headers)
+        self.response = requests.get(url=self.prices_api, headers=self.headers)
         self.response_code = int(self.response.status_code)
         # print(self.response.text)
         if self.response_code >= 400 and self.response_code < 500:
@@ -39,7 +40,7 @@ class DataManager:
                 "iataCode": value
             }
         }
-        self.response = requests.put(url=self.sheety_api+f"/{row}", headers=self.headers, json=self.json)
+        self.response = requests.put(url=self.prices_api+f"/{row}", headers=self.headers, json=self.json)
 
     def update_iata(self):
         '''
@@ -51,3 +52,17 @@ class DataManager:
             city['iataCode'] = self.flight_data.get_iata(city['city'])
             # Updata row information
             self.update_row(row=city['id'], value=city['iataCode'])
+
+    def update_user(self, row:int=2, first_name:str=None, last_name:str=None, email:str=None):
+        '''
+            Updates the iata code for the provided inputs.
+        '''
+        self.json = {
+            "user":{
+                "firstName": first_name
+                , "lastName": last_name
+                , "email": email
+                , "id": row
+            }
+        }
+        self.response = requests.put(url=self.users_api+f"/{row}", headers=self.headers, json=self.json)

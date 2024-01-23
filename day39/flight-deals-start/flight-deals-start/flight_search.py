@@ -23,7 +23,6 @@ class FlightSearch:
             , "date_to": self.end_day.strftime("%d/%m/%Y")
             , "price_to": price
             , "max_stopovers": 0
-            , "curr": "GBP"
         }
         self.response = requests.get(url=self.url, params=self.params, headers=self.headers)
         # print(self.response.text)

@@ -15,14 +15,15 @@ class FlightSearch:
         self.end_day = self.today + timedelta(days=180)
 
 
-    def get_flights(self, city, price):
+    def get_flights(self, city, price, stop_over=0, via_city=""):
         self.params = {
             "fly_from": "city:LON"
             , "fly_to": f"city:{city}"
             , "date_from": self.today.strftime("%d/%m/%Y")
             , "date_to": self.end_day.strftime("%d/%m/%Y")
             , "price_to": price
-            , "max_stopovers": 0
+            , "max_stopovers": stop_over
+            , "via_city": via_city
             , "curr": "GBP"
         }
         self.response = requests.get(url=self.url, params=self.params, headers=self.headers)
