@@ -23,9 +23,9 @@ app.config['SECRET_KEY'] = 'a secret'
 app.config['BOOTSTRAP_BOOTSWATCH_THEME'] = 'darkly'
 Bootstrap5(app)
 
-coffee_ratings = ['☕️', '☕️☕️', '☕️☕️☕️', '☕️☕️☕️☕️', '☕️☕️☕️☕️☕️']
-wifi_ratings = ['💪', '💪💪', '💪💪💪', '💪💪💪💪', '💪💪💪💪💪']
-power_ratings = ['🔌', '🔌🔌', '🔌🔌🔌', '🔌🔌🔌🔌', '🔌🔌🔌🔌🔌']
+coffee_ratings = ['✘', '☕️', '☕️☕️', '☕️☕️☕️', '☕️☕️☕️☕️', '☕️☕️☕️☕️☕️']
+wifi_ratings = ['✘', '💪', '💪💪', '💪💪💪', '💪💪💪💪', '💪💪💪💪💪']
+power_ratings = ['✘', '🔌', '🔌🔌', '🔌🔌🔌', '🔌🔌🔌🔌', '🔌🔌🔌🔌🔌']
 
 class CafeForm(FlaskForm):
     cafe = StringField(label='Cafe name', validators=[DataRequired()])
@@ -57,8 +57,8 @@ def home():
 def add_cafe():
     form = CafeForm()
     if form.validate_on_submit():
-        print("True")
-        print(form.data)
+        with open('day62\start\cafe-data.csv', newline='', encoding='utf-8', mode="a") as csv_file:
+            csv_file.write(",".join([value for _,value in form.data.items()][:-2]) + "\n")
     # Exercise:
     # Make the form write a new row into cafe-data.csv
     # with   if form.validate_on_submit()
@@ -67,7 +67,7 @@ def add_cafe():
 
 @app.route('/cafes')
 def cafes():
-    with open('cafe-data.csv', newline='', encoding='utf-8') as csv_file:
+    with open('day62\start\cafe-data.csv', newline='', encoding='utf-8') as csv_file:
         csv_data = csv.reader(csv_file, delimiter=',')
         list_of_rows = []
         for row in csv_data:
