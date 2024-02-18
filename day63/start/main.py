@@ -1,5 +1,3 @@
-from flask import Flask, render_template, request, redirect, url_for
-
 '''
 Red underlines? Install the required packages first: 
 Open the Terminal in PyCharm (bottom left). 
@@ -13,20 +11,58 @@ pip3 install -r requirements.txt
 This will install the packages from requirements.txt for this project.
 '''
 
+from flask import Flask, render_template, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import Integer, String, Float
+
+class Base(DeclarativeBase):
+  pass
+
+db = SQLAlchemy(model_class=Base)
+
+# create the app
 app = Flask(__name__)
+# configure the SQLite database, relative to the app instance folder
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///library.db"
+# initialize the app with the extension
+db.init_app(app)
 
-all_books = []
+class Book(db.Model):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, unique=True, nullable=False)
+    title: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
+    author: Mapped[str] = mapped_column(String(250), unique=False, nullable=False)
+    rating: Mapped[float] = mapped_column(Float, unique=False, nullable=False)
 
+with app.app_context():
+    db.create_all()
 
-@app.route('/')
+book_list = list()
+
+@app.route('/', methods=['POST', 'GET'])
 def home():
-    return render_template('index.html')
+    global book_list
+    if request.method == 'POST':
+        book_info = request.form.to_dict()
+        print(book_info)
+        print(1 if len(book_list) == 0 else book_list[-1].id + 1, book_info['name'], book_info['author'], book_info['rating'])
+        new_book = Book(
+            id = 1 if len(book_list) == 0 else book_list[-1].id + 1
+            , title = book_info['name']
+            , author = book_info['author']
+            , rating = book_info['rating']
+        )
+        db.session.add(new_book)
+        db.session.commit()
+    result = db.session.execute(db.select(Book).order_by(Book.id))
+    all_books = result.scalars()
+    book_list = all_books.fetchall()
+    return render_template('index.html'
+                           , books = book_list)
 
 
 @app.route("/add", methods=['POST', 'GET'])
 def add():
-    if request.method == 'POST':
-        print(request.form)
     return render_template('add.html')
 
 
