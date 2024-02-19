@@ -42,6 +42,16 @@ book_list = list()
 @app.route('/', methods=['POST', 'GET'])
 def home():
     global book_list
+    result = db.session.execute(db.select(Book).order_by(Book.id))
+    all_books = result.scalars()
+    book_list = all_books.fetchall()
+    return render_template('index.html'
+                           , books = book_list)
+
+
+@app.route("/add", methods=['POST', 'GET'])
+def add():
+    global book_list
     if request.method == 'POST':
         book_info = request.form.to_dict()
         print(book_info)
@@ -54,20 +64,22 @@ def home():
         )
         db.session.add(new_book)
         db.session.commit()
-    result = db.session.execute(db.select(Book).order_by(Book.id))
-    all_books = result.scalars()
-    book_list = all_books.fetchall()
-    return render_template('index.html'
-                           , books = book_list)
-
-
-@app.route("/add", methods=['POST', 'GET'])
-def add():
+        return redirect(url_for('home'))
     return render_template('add.html')
 
-@app.route("/edit/<id>")
+@app.route("/edit/<id>", methods = ['POST', 'GET'])
 def edit(id):
-    return render_template('edit.html')
+    if request.method == "POST":
+        result = db.session.execute(db.select(Book).where(Book.id == id)).scalar()
+        result.rating = float(request.form['rating'])
+        result = db.session.execute(db.select(Book).order_by(Book.id))
+        db.session.commit()
+        return redirect(url_for('home'))
+    result = db.session.execute(db.select(Book).where(Book.id == id)).scalar()
+    return render_template('edit.html'
+                           , title = result.title
+                           , rating = result.rating
+                           , id = id)
 
 if __name__ == "__main__":
     app.run(debug=True)

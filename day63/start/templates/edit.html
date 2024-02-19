@@ -8,5 +8,10 @@
 <body>
     <h2>Book Name: {{ title }}</h2>
     <h2>Current Rating: {{ rating }}</h2>
+    <form action="{{ url_for('edit', id=id) }}"  method="POST">
+        <label for="">New Rating</label>
+        <input type="text" name="rating">
+        <button type="submit">Submit</button>
+    </form>
 </body>
 </html>
