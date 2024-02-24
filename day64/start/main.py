@@ -58,6 +58,11 @@ with app.app_context():
     # db.session.add(second_movie)
     # db.session.commit()
 
+class MyForm(FlaskForm):
+    rating  = StringField(label='Your Rating Out of 10 e.g 7.5', validators=[DataRequired()])
+    review  = StringField(label='Your Review', validators=[DataRequired()])
+    submit = SubmitField(label='Done')
+
 @app.route("/")
 def home():
     result = db.session.execute(db.select(Movie).order_by(Movie.id))
@@ -65,6 +70,12 @@ def home():
     movie_list = all_movies.fetchall()
     return render_template("index.html"
                            , movie_list = movie_list)
+
+@app.route("/edit")
+def edit():
+    form = MyForm()
+    render_template("edit.html"
+                    , form = form)
 
 if __name__ == '__main__':
     app.run(debug=True)
