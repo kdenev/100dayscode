@@ -71,11 +71,29 @@ def home():
     return render_template("index.html"
                            , movie_list = movie_list)
 
-@app.route("/edit")
+@app.route("/edit", methods=['POST', 'GET'])
 def edit():
+
+    id = request.args.get('id')
     form = MyForm()
-    render_template("edit.html"
+
+    if form.validate_on_submit():
+        form_data = request.form.to_dict()
+        movie_to_update = db.session.execute(db.select(Movie).where(Movie.id == id)).scalar()
+        movie_to_update.rating = float(form_data['rating'])
+        movie_to_update.review = form_data['review']
+        db.session.commit()
+        return redirect(url_for('home'))
+    
+    return render_template("edit.html"
                     , form = form)
+
+@app.route("/delete")
+def delete():
+    movie_to_delete = db.get_or_404(Movie, request.args.get('del_movie'))
+    db.session.delete(movie_to_delete)
+    db.session.commit()
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     app.run(debug=True)
