@@ -7,6 +7,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 import requests
+import os
 
 '''
 Red underlines? Install the required packages first: 
@@ -22,19 +23,48 @@ This will install the packages from requirements.txt for this project.
 '''
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config['SECRET_KEY'] = 'a secret'
 Bootstrap5(app)
 
 # CREATE DB
+class Base(DeclarativeBase):
+  pass
 
+db = SQLAlchemy(model_class=Base)
+
+base_dir = os.path.abspath(os.path.dirname(__name__))
+database_dir = os.path.join(base_dir, 'day64\\start\\instance') 
+
+# configure the SQLite database, relative to the app instance folder
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(database_dir, 'movies.db')}"
+# initialize the app with the extension
+db.init_app(app)
 
 # CREATE TABLE
+class Movie(db.Model):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, unique=True, nullable=False)
+    title: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
+    year: Mapped[str] = mapped_column(Integer, unique=False, nullable=False)
+    description: Mapped[str] = mapped_column(String(), unique=False, nullable=False)
+    rating: Mapped[float] = mapped_column(Float, unique=False, nullable=False)
+    ranking: Mapped[float] = mapped_column(Float, unique=False, nullable=False)
+    review: Mapped[str] = mapped_column(String(250), unique=False, nullable=False)
+    img_url: Mapped[str] = mapped_column(String(250), unique=False, nullable=False)
 
+
+    
+with app.app_context():
+    db.create_all()
+    # db.session.add(second_movie)
+    # db.session.commit()
 
 @app.route("/")
 def home():
-    return render_template("index.html")
-
+    result = db.session.execute(db.select(Movie).order_by(Movie.id))
+    all_movies = result.scalars()
+    movie_list = all_movies.fetchall()
+    return render_template("index.html"
+                           , movie_list = movie_list)
 
 if __name__ == '__main__':
     app.run(debug=True)
