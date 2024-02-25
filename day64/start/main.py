@@ -6,8 +6,8 @@ from sqlalchemy import Integer, String, Float
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
-import requests
 import os
+from tmdb import TMDBMovie
 
 '''
 Red underlines? Install the required packages first: 
@@ -21,6 +21,8 @@ pip3 install -r requirements.txt
 
 This will install the packages from requirements.txt for this project.
 '''
+
+tmdb = TMDBMovie()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a secret'
@@ -50,13 +52,9 @@ class Movie(db.Model):
     ranking: Mapped[float] = mapped_column(Float, unique=False, nullable=False)
     review: Mapped[str] = mapped_column(String(250), unique=False, nullable=False)
     img_url: Mapped[str] = mapped_column(String(250), unique=False, nullable=False)
-
-
     
 with app.app_context():
     db.create_all()
-    # db.session.add(second_movie)
-    # db.session.commit()
 
 class ChangeRating(FlaskForm):
     rating  = StringField(label='Your Rating Out of 10 e.g 7.5', validators=[DataRequired()])
@@ -64,7 +62,7 @@ class ChangeRating(FlaskForm):
     submit = SubmitField(label='Done')
 
 class AddMovie(FlaskForm):
-    rating  = StringField(label='Movie Title', validators=[DataRequired()])
+    title  = StringField(label='Movie Title', validators=[DataRequired()], name="title")
     submit = SubmitField(label='Add Movie')
 
 @app.route("/")
@@ -99,11 +97,23 @@ def delete():
     db.session.commit()
     return redirect(url_for('home'))
 
-@app.route("/add")
+@app.route("/add", methods=['POST', 'GET'])
 def add():
     add_form = AddMovie()
+    if request.method == 'POST':
+        if add_form.validate_on_submit:
+            title = request.form['title']
+            if title:
+                data = tmdb.fetch_movie_list(title)
+                return render_template('select.html'
+                                        ,data = data)
     return render_template('add.html'
                            , form = add_form)
+
+# on each anchor tag add the url_for id = movie.id
+# create a separate route for the update
+# new api url https://developer.themoviedb.org/reference/movie-details
+# old api url https://developer.themoviedb.org/reference/search-movie
 
 if __name__ == '__main__':
     app.run(debug=True)
