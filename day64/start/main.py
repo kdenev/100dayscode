@@ -58,10 +58,14 @@ with app.app_context():
     # db.session.add(second_movie)
     # db.session.commit()
 
-class MyForm(FlaskForm):
+class ChangeRating(FlaskForm):
     rating  = StringField(label='Your Rating Out of 10 e.g 7.5', validators=[DataRequired()])
     review  = StringField(label='Your Review', validators=[DataRequired()])
     submit = SubmitField(label='Done')
+
+class AddMovie(FlaskForm):
+    rating  = StringField(label='Movie Title', validators=[DataRequired()])
+    submit = SubmitField(label='Add Movie')
 
 @app.route("/")
 def home():
@@ -75,9 +79,9 @@ def home():
 def edit():
 
     id = request.args.get('id')
-    form = MyForm()
+    edit_form = ChangeRating()
 
-    if form.validate_on_submit():
+    if edit_form.validate_on_submit():
         form_data = request.form.to_dict()
         movie_to_update = db.session.execute(db.select(Movie).where(Movie.id == id)).scalar()
         movie_to_update.rating = float(form_data['rating'])
@@ -86,7 +90,7 @@ def edit():
         return redirect(url_for('home'))
     
     return render_template("edit.html"
-                    , form = form)
+                    , form = edit_form)
 
 @app.route("/delete")
 def delete():
@@ -94,6 +98,12 @@ def delete():
     db.session.delete(movie_to_delete)
     db.session.commit()
     return redirect(url_for('home'))
+
+@app.route("/add")
+def add():
+    add_form = AddMovie()
+    return render_template('add.html'
+                           , form = add_form)
 
 if __name__ == '__main__':
     app.run(debug=True)
