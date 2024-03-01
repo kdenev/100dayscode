@@ -9,23 +9,23 @@
    
   {% for movie in movie_list %}
       <div class="card" >
-        <div class="front" style="background-image: url({{ movie.img_url }});">
-            <p class="large">{{ movie.id }}</p>
+        <div class="front" style="background-image: url({{ movie[0].img_url }});">
+            <p class="large">{{ movie[0].ranking }}</p>
         </div>
         <div class="back">
           <div>
-        <div class="title">{{ movie.title }} <span class="release_date">({{ movie.year }})</span></div>
+        <div class="title">{{ movie[0].title }} <span class="release_date">({{ movie[0].year }})</span></div>
             <div class="rating">
-                <label>{{ movie.rating }}</label>
+                <label>{{ movie[0].rating }}</label>
               <i class="fas fa-star star"></i>
             </div>
-              <p class="review">"{{ movie.review }}"</p>
+              <p class="review">"{{ movie[0].review }}"</p>
             <p class="overview">
-              {{ movie.description }}
+              {{ movie[0].description }}
             </p>
 
-            <a href="{{ url_for('edit', id=movie.id) }}" class="button">Update</a>
-            <a href="{{ url_for('delete', del_movie=movie.id) }}" class="button delete-button">Delete</a>
+            <a href="{{ url_for('edit', id=movie[0].id) }}" class="button">Update</a>
+            <a href="{{ url_for('delete', del_movie=movie[0].id) }}" class="button delete-button">Delete</a>
 
           </div>
         </div>

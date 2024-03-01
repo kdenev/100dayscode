@@ -46,12 +46,12 @@ db.init_app(app)
 class Movie(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, unique=True, nullable=False)
     title: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    year: Mapped[str] = mapped_column(Integer, unique=False, nullable=False)
-    description: Mapped[str] = mapped_column(String(), unique=False, nullable=False)
-    rating: Mapped[float] = mapped_column(Float, unique=False, nullable=False)
-    ranking: Mapped[float] = mapped_column(Float, unique=False, nullable=False)
-    review: Mapped[str] = mapped_column(String(250), unique=False, nullable=False)
-    img_url: Mapped[str] = mapped_column(String(250), unique=False, nullable=False)
+    year: Mapped[str] = mapped_column(Integer, unique=False, nullable=True)
+    description: Mapped[str] = mapped_column(String(), unique=False, nullable=True)
+    rating: Mapped[float] = mapped_column(Float, unique=False, nullable=True)
+    ranking: Mapped[float] = mapped_column(Float, unique=False, nullable=True)
+    review: Mapped[str] = mapped_column(String(250), unique=False, nullable=True)
+    img_url: Mapped[str] = mapped_column(String(250), unique=False, nullable=True)
     
 with app.app_context():
     db.create_all()
@@ -67,11 +67,11 @@ class AddMovie(FlaskForm):
 
 @app.route("/")
 def home():
-    result = db.session.execute(db.select(Movie).order_by(Movie.id))
-    all_movies = result.scalars()
-    movie_list = all_movies.fetchall()
+    result = db.session.execute(db.select(Movie).order_by(Movie.rating)).all()
+    for i in range(len(result)):
+        result[i][0].ranking = i+1
     return render_template("index.html"
-                           , movie_list = movie_list)
+                            , movie_list = result)
 
 @app.route("/edit", methods=['POST', 'GET'])
 def edit():
@@ -109,6 +109,23 @@ def add():
                                         ,data = data)
     return render_template('add.html'
                            , form = add_form)
+
+@app.route("/add_record")
+def add_record():
+    response = tmdb.fetch_movie_info(request.args.get('id'))
+    movie_info = response.json()
+    new_movie = Movie(
+        title = request.args.get('title')
+        , year = int(request.args.get('year'))
+        , description = movie_info['overview']
+        , img_url = "https://image.tmdb.org/t/p/w500" + movie_info['poster_path']
+        , rating = 0
+        , ranking = 0
+        , review = ""
+    )
+    db.session.add(new_movie)
+    db.session.commit()
+    return redirect(url_for('edit', id=new_movie.id))
 
 # on each anchor tag add the url_for id = movie.id
 # create a separate route for the update

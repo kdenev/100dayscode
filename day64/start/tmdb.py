@@ -19,4 +19,12 @@ class TMDBMovie:
         }
         response = requests.get(self.url , headers=self.headers, params=self.params)
         
-        return response.json()['results'] or None
+        return response.json()['results']
+    
+    def fetch_movie_info(self, movie_id):
+        self.url = f"https://api.themoviedb.org/3/movie/{movie_id}"
+        self.params = {
+            "language": "en-US"
+        }
+        response = requests.get(self.url , headers=self.headers, params=self.params)
+        return response
