@@ -18,6 +18,14 @@ pip3 install -r requirements.txt
 This will install the packages from requirements.txt for this project.
 '''
 
+# HTTP GET - Read Record
+
+# HTTP POST - Create Record
+
+# HTTP PUT/PATCH - Update Record
+
+# HTTP DELETE - Delete Record
+
 base_dir = os.path.abspath(os.path.dirname(__name__))
 database_dir = os.path.join(base_dir, 'day66\\start\\instance') 
 
@@ -62,13 +70,11 @@ def random():
     cafe_info = dict(list(cafe.__dict__.items())[1:])
     return jsonify(cafe = cafe_info)
 
-# HTTP GET - Read Record
-
-# HTTP POST - Create Record
-
-# HTTP PUT/PATCH - Update Record
-
-# HTTP DELETE - Delete Record
+@app.route("/all", methods=['GET'])
+def all():
+    cafes = db.session.execute(db.select(Cafe).order_by(Cafe.id)).scalars()
+    cafe_info = [dict(list(cafe.__dict__.items())[1:]) for cafe in cafes]
+    return jsonify(cafes = cafe_info)
 
 
 if __name__ == '__main__':
