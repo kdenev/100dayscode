@@ -76,6 +76,17 @@ def all():
     cafe_info = [dict(list(cafe.__dict__.items())[1:]) for cafe in cafes]
     return jsonify(cafes = cafe_info)
 
+@app.route("/search", methods=['GET'])
+def search():
+    location = request.args.get('loc')
+    result = db.session.execute(db.select(Cafe).where(Cafe.location == location)).scalars()
+    error_message = {"Not Found":"Sorrym we don't have a cafe at that location."}
+    if result.fetchmany(1):
+        cafe_info = [dict(list(cafe.__dict__.items())[1:]) for cafe in result]
+        return jsonify(cafe = cafe_info)
+    else:
+        return jsonify(error = error_message)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
