@@ -120,6 +120,21 @@ def update(id):
         return jsonify(success = success_message)
     error_message = {"Not Found":"Sorry we don't have a cafe with that id in our database."}
     return jsonify(error = error_message)
-    
+
+@app.route("/delete-cafe/<id>", methods=['DELETE'])
+def delete_cafe(id):
+    api_key = request.args.get('api_key')
+    print(api_key)
+    cafe_to_delete = db.get_or_404(Cafe, id)
+    if api_key == "TopSecretAPIKey":
+        if cafe_to_delete:
+            db.session.delete(cafe_to_delete)
+            db.session.commit()
+            success_message = {"Successs":f"Cafe {cafe_to_delete.name} deleted successfully."}
+            return jsonify(success = success_message)
+        else:
+            return jsonify(error = "This cafe does not exist in our database.")
+    return jsonify(error = {"403":"Forbidden"})
+
 if __name__ == '__main__':
     app.run(debug=True)
