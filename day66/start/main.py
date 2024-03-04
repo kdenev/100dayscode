@@ -87,6 +87,12 @@ def search():
     else:
         return jsonify(error = error_message)
 
+@app.route("/add", methods=['POST'])
+def add():
+    name = request.form.get("name")
+    map_url = request.form.get('map_url')
+    print(name, map_url)
+    return "success"
 
 if __name__ == '__main__':
     app.run(debug=True)
