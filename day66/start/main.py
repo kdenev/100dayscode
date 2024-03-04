@@ -89,10 +89,37 @@ def search():
 
 @app.route("/add", methods=['POST'])
 def add():
-    name = request.form.get("name")
-    map_url = request.form.get('map_url')
-    print(name, map_url)
-    return "success"
-
+    try:
+        new_cafe= Cafe(
+            name = request.form.get("name")
+            , map_url = request.form.get('map_url')
+            , img_url = request.form.get('img_url')
+            , location = request.form.get('location')
+            , has_sockets = request.form.get('has_sockets')
+            , has_toilet = request.form.get('has_toilet')
+            , has_wifi = request.form.get('has_wifi')
+            , can_take_calls = request.form.get('can_take_calls')
+            , seats = request.form.get('seats')
+            , coffee_price = request.form.get('coffee_price')
+        )
+        db.session.add(new_cafe)
+        db.session.commit()
+        success_message = {"Successs":"New cafe added."}
+        return jsonify(success = success_message)
+    except:
+        error_message = {"Fail":"Cannot add this coffee place. Some thing went wrong."}
+        return jsonify(error = error_message)
+    
+@app.route("/update-price/<id>", methods=['PATCH'])
+def update(id):
+    cafe_to_update = db.get_or_404(Cafe, id)
+    if cafe_to_update:
+        cafe_to_update.coffee_price = request.args.get('new_price')
+        db.session.commit()
+        success_message = {"Successs":f"Change the price of a coffee for {cafe_to_update.name}."}
+        return jsonify(success = success_message)
+    error_message = {"Not Found":"Sorry we don't have a cafe with that id in our database."}
+    return jsonify(error = error_message)
+    
 if __name__ == '__main__':
     app.run(debug=True)
