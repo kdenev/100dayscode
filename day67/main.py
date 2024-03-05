@@ -26,9 +26,11 @@ This will install the packages from the requirements.txt for this project.
 base_dir = os.path.abspath(os.path.dirname(__name__))
 database_dir = os.path.join(base_dir, 'day67\\instance') 
 
+ckeditor = CKEditor()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a secret'
 Bootstrap5(app)
+ckeditor = CKEditor(app)
 
 # CREATE DATABASE
 class Base(DeclarativeBase):
@@ -48,6 +50,15 @@ class BlogPost(db.Model):
     author: Mapped[str] = mapped_column(String(250), nullable=False)
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
 
+# CONFIGURE FORM
+class BlogForm(FlaskForm):
+    title = StringField(label="Blog Title", validators=[DataRequired()])
+    subtitile = StringField(label="Blog Subtitle", validators=[DataRequired()])
+    author = StringField(label="Author", validators=[DataRequired()])
+    img_url = StringField(label="Background Image URL", validators=[DataRequired()])
+    body = CKEditorField(label="Body", validators=[DataRequired()])
+
+    submit = SubmitField(label="Create New Post")
 
 with app.app_context():
     db.create_all()
@@ -56,18 +67,23 @@ with app.app_context():
 @app.route('/')
 def get_all_posts():
     # TODO: Query the database for all the posts. Convert the data to a python list.
-    posts = []
+    posts = db.session.execute(db.select(BlogPost)).scalars().all()
     return render_template("index.html", all_posts=posts)
 
 # TODO: Add a route so that you can click on individual posts.
-@app.route('/')
+@app.route('/posts/<int:post_id>')
 def show_post(post_id):
     # TODO: Retrieve a BlogPost from the database based on the post_id
-    requested_post = "Grab the post from your database"
+    requested_post = db.session.execute(db.select(BlogPost).where(BlogPost.id == post_id)).scalar()
     return render_template("post.html", post=requested_post)
 
 
 # TODO: add_new_post() to create a new blog post
+@app.route('/add')
+def add():
+    blog_form = BlogForm()
+    return render_template("make-post.html"
+                           , form = blog_form)
 
 # TODO: edit_post() to change an existing blog post
 
