@@ -15,7 +15,7 @@ database_dir = os.path.join(base_dir, 'day67\\instance')
 # CREATE DATABASE
 class Base(DeclarativeBase):
     pass
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(database_dir, 'posts.db')}"
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(database_dir, 'users.db')}"
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
@@ -35,8 +35,17 @@ def home():
     return render_template("index.html")
 
 
-@app.route('/register')
+@app.route('/register', methods = ['POST', 'GET'])
 def register():
+    if request.method == 'POST':
+        form_data = request.form.to_dict()
+        new_user = User(
+            email = form_data['email']
+            , name = form_data['name']
+            , password = form_data['password']
+        )
+        db.session.add(new_user)
+        db.session.commit()
     return render_template("register.html")
 
 
@@ -61,4 +70,4 @@ def download():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5033)
