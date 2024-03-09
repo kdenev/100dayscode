@@ -46,11 +46,17 @@ def register():
         )
         db.session.add(new_user)
         db.session.commit()
+        return redirect(url_for('secrets', name = form_data['name']))
     return render_template("register.html")
 
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'POST':
+        form_data = request.form.to_dict()
+        user = db.session.execute(db.select(User).where(form_data['email'] == User.email)).scalar()
+        if user:
+            return redirect(url_for('secrets', name = user.name))
     return render_template("login.html")
 
 
@@ -66,7 +72,7 @@ def logout():
 
 @app.route('/download')
 def download():
-    pass
+    return send_from_directory('static/files', 'cheat_sheet.pdf')
 
 
 if __name__ == "__main__":
