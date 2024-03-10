@@ -3,14 +3,14 @@ from flask import Flask, abort, render_template, redirect, url_for, flash
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
 from flask_gravatar import Gravatar
-from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
+from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user, login_required
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Text
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 # Import your forms from the forms.py
-from forms import CreatePostForm, RegisterForm
+from forms import CreatePostForm, RegisterForm, LoginForm
 import os
 
 
@@ -33,7 +33,8 @@ ckeditor = CKEditor(app)
 Bootstrap5(app)
 
 # TODO: Configure Flask-Login
-
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 # CREATE DATABASE
 
@@ -60,30 +61,65 @@ class BlogPost(db.Model):
 
 
 # TODO: Create a User table for all your registered users. 
-
+class User(UserMixin, db.Model):
+    __tablename__ = "user"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String, nullable=False, unique=False)
+    email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    password: Mapped[str] = mapped_column(String, nullable=False, unique=False)
 
 with app.app_context():
     db.create_all()
 
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, user_id)
 
 # TODO: Use Werkzeug to hash the user's password when creating a new user.
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     reg_form = RegisterForm()
     if reg_form.validate_on_submit():
-        print(reg_form.data)
+        form_data = reg_form.data
+        availability_check = db.session.execute(db.select(User).where(form_data['email'] == User.email)).scalar()
+        if availability_check:
+            flash("Email already registered. Log in instead.")
+            return redirect(url_for('login'))
+        else:
+            new_user = User(
+                    email = form_data['email']
+                    , name = form_data['name']
+                    , password = generate_password_hash(form_data['password'], method='pbkdf2:sha256', salt_length=8)
+                )
+            db.session.add(new_user)
+            db.session.commit()
+            login_user(new_user)
+            return redirect(url_for('get_all_posts'))
     return render_template("register.html"
                            , form = reg_form)
 
 
 # TODO: Retrieve a user from the database based on their email. 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    return render_template("login.html")
+    login_form = LoginForm()
+    if login_form.validate_on_submit():
+        form_data = login_form.data
+        user = db.session.execute(db.select(User).where(form_data['email'] == User.email)).scalar()
+        if check_password_hash(user.password, form_data['password']):
+            login_user(user)
+            return redirect(url_for('get_all_posts'))
+        else:
+            flash('Wrong credentials.')
+            return redirect(url_for('login'))
+    return render_template("login.html"
+                           , form = login_form)
 
 
 @app.route('/logout')
+@login_required
 def logout():
+    logout_user()
     return redirect(url_for('get_all_posts'))
 
 
@@ -102,7 +138,19 @@ def show_post(post_id):
 
 
 # TODO: Use a decorator so only an admin user can create a new post
+def admin_only(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if current_user.is_authenticated:
+            print(current_user)
+            if current_user.id == 1:
+                return func(*args, **kwargs)
+        return abort(code=403)
+    return wrapper
+
+
 @app.route("/new-post", methods=["GET", "POST"])
+@admin_only
 def add_new_post():
     form = CreatePostForm()
     if form.validate_on_submit():
