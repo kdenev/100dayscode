@@ -10,7 +10,8 @@ from sqlalchemy import Integer, String, Text
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 # Import your forms from the forms.py
-from forms import CreatePostForm
+from forms import CreatePostForm, RegisterForm
+import os
 
 
 '''
@@ -27,7 +28,7 @@ This will install the packages from the requirements.txt for this project.
 '''
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config['SECRET_KEY'] = 'a secret'
 ckeditor = CKEditor(app)
 Bootstrap5(app)
 
@@ -35,9 +36,13 @@ Bootstrap5(app)
 
 
 # CREATE DATABASE
+
+base_dir = os.path.abspath(os.path.dirname(__name__))
+database_dir = os.path.join(base_dir, 'day69\\instance') 
+
 class Base(DeclarativeBase):
     pass
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(database_dir, 'posts.db')}"
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
@@ -62,9 +67,13 @@ with app.app_context():
 
 
 # TODO: Use Werkzeug to hash the user's password when creating a new user.
-@app.route('/register')
+@app.route('/register', methods=['GET', 'POST'])
 def register():
-    return render_template("register.html")
+    reg_form = RegisterForm()
+    if reg_form.validate_on_submit():
+        print(reg_form.data)
+    return render_template("register.html"
+                           , form = reg_form)
 
 
 # TODO: Retrieve a user from the database based on their email. 
